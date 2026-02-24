@@ -3,15 +3,18 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node server",
-    "dev": "nodemon server",
+    "node": "node node_server",
+    "express": "node express_server",
+    "dev": "nodemon express_server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Yinka",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.6",
     "date-fns": "^4.1.0",
+    "express": "^5.2.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
