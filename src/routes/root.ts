@@ -1,6 +1,10 @@
-const express = require('express');
+import express from 'express';
+import path from 'path';
 const router = express.Router();
-const path = require('path');
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+console.log('test', __dirname);
 
 // Can use regex /^\/$|\/index(.html)?/ or '/{index{.html}}'
 router.get('/{index{.html}}', (req, res) => {
@@ -17,4 +21,4 @@ router.get('/old-page{.html}', (req, res) => {
     res.redirect(301, '/new-page.html'); //302 by default
 });
 
-module.exports = router;
+export { router };

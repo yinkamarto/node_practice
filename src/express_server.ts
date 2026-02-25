@@ -1,9 +1,19 @@
-const express = require('express');
+import express from 'express';
+import path from 'path';
+import cors from 'cors';
+import { logger } from './middleware/logEvents.ts';
+import { errorHandler } from './middleware/errorHandler.ts';
+import { fileURLToPath } from "url";
+import { router as indexRouter } from './routes/root.ts';
+import { router as subdirRouter } from './routes/subdir.ts';
+import { router as employeesRouter } from './routes/api/employees.ts';
+type CorsOptions = cors.CorsOptions;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+console.log('test', __dirname);
+
 const app = express();
-const path = require('path');
-const cors = require('cors');
-const { logger } = require('./middleware/logEvents')
-const errorHandler = require('./middleware/errorHandler')
 const PORT = process.env.PORT || 8000;
 
 // custom middleware
@@ -11,9 +21,9 @@ app.use(logger);
 
 // Cross Origin Resource Sharing (can be used for domains that can access the route like front end or something similar)
 const whiteList = ['https://www.yoursite.com', 'http://127.0.0.1:5500', 'http://localhost:8000'];
-const corsOptions = {
+const corsOptions: CorsOptions = {
     origin: (origin, callback) => {
-        if (whiteList.indexOf(origin) !== -1 || !origin) { //remove !origin in production
+        if (!whiteList.includes(String(origin)) || !origin) { //remove !origin in production
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -33,16 +43,9 @@ app.use(express.json());
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/subdir', express.static(path.join(__dirname, 'public')));
 
-app.use('/', require('./routes/root'));
-app.use('/subdir', require('./routes/subdir'));
-
-// Route handler
-app.get(/\/hello(.html)?/, (req, res, next) => {
-    console.log('attempted to load hello.html');
-    next();
-}, (req, res) => {
-    res.send('Hello World!');
-});
+app.use('/', indexRouter);
+app.use('/subdir', subdirRouter);
+app.use('/employees', employeesRouter);
 
 app.all('*splat', (req, res) => {
     res.status(404);
