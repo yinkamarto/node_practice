@@ -1,38 +1,19 @@
 import express from 'express';
-import employees from '../../../data/employees.json' with { type: 'json' };
+import { 
+    getAllEmployees,
+    getEmployee,
+    createNewEmployee,
+    updateEmployee,
+    deleteEmployee
+} from '../../controllers/employeesController.ts';
+export const router = express.Router();
 
-const router = express.Router();
-interface Employee {
-    id: number,
-    firstname: string,
-    lastname: string
-}
-const data: {employees?: Employee[]} = {};
-data.employees = employees;
 
 router.route('/')
-    .get((req, res) => {
-        res.json(data.employees);
-    })
-    .post((req, res) => {
-        res.json({
-            "firstname": req.body.firstname,
-            "lastname": req.body.lastname
-        });
-    })
-    .put((req, res) => {
-        res.json({
-            "firstname": req.body.firstname,
-            "lastname": req.body.lastname
-        });
-    })
-    .delete((req, res) => {
-        res.json({ "id": req.body.id });
-    });
+    .get(getAllEmployees)
+    .post(createNewEmployee)
+    .put(updateEmployee)
+    .delete(deleteEmployee);
 
 router.route('/:id')
-    .get((req, res) => {
-        res.json({ "id": req.params.id });
-    })
-
-export { router };
+    .get(getEmployee)

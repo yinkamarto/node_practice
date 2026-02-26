@@ -7,7 +7,8 @@ import { fileURLToPath } from "url";
 import { router as indexRouter } from './routes/root.ts';
 import { router as subdirRouter } from './routes/subdir.ts';
 import { router as employeesRouter } from './routes/api/employees.ts';
-type CorsOptions = cors.CorsOptions;
+import {corsOptions} from './config/corsOptions.ts';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,18 +20,6 @@ const PORT = process.env.PORT || 8000;
 // custom middleware
 app.use(logger);
 
-// Cross Origin Resource Sharing (can be used for domains that can access the route like front end or something similar)
-const whiteList = ['https://www.yoursite.com', 'http://127.0.0.1:5500', 'http://localhost:8000'];
-const corsOptions: CorsOptions = {
-    origin: (origin, callback) => {
-        if (!whiteList.includes(String(origin)) || !origin) { //remove !origin in production
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    optionsSuccessStatus: 200
-}
 app.use(cors(corsOptions));
 
 // built-in middleware to encode data

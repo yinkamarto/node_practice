@@ -1,4 +1,3 @@
-// import { NextFunction, Request, Response } from "express";
 import express from 'express';
 type NextFunction = express.NextFunction;
 type Request = express.Request;
