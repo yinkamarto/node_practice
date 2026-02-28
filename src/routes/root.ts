@@ -1,10 +1,9 @@
 import express from 'express';
 import path from 'path';
 const router = express.Router();
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-console.log('test', __dirname);
+import { getDirName } from '../lib/util.ts';
+
+const __dirname = getDirName(import.meta.url)
 
 // Can use regex /^\/$|\/index(.html)?/ or '/{index{.html}}'
 router.get('/{index{.html}}', (req, res) => {
