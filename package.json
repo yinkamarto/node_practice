@@ -14,7 +14,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.52.0",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/k6": "^1.6.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -35,6 +37,7 @@
     "eslint": "^9.39.3",
     "globals": "^17.3.0",
     "jiti": "^2.6.1",
+    "k6": "^0.0.0",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",

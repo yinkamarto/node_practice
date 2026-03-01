@@ -3,7 +3,7 @@ import users from '../model/users.json' with { type: 'json' };
 import type { User } from './authController.ts';
 import path from 'path';
 import fsPromises from 'fs/promises';
-import { getDirName } from '../lib/util.ts';
+import { getDirName, inLocalDev } from '../lib/util.ts';
 
 const __dirname = getDirName(import.meta.url)
 
@@ -24,7 +24,7 @@ export const handleLogout  = async (req:Request, res:Response) => {
     // Is refresh token in db?
     const foundUser = usersDB.users.find(person => person.refreshToken === refreshToken) as User;
     if (!foundUser) {
-        res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
+        res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: !inLocalDev() });
         return res.sendStatus(403); // Forbidden
     }
     try {
@@ -36,7 +36,7 @@ export const handleLogout  = async (req:Request, res:Response) => {
             path.join(__dirname, '..', 'model', 'users.json'),
             JSON.stringify(usersDB.users)
         );
-        res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
+        res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: !inLocalDev() });
         res.sendStatus(204);
     } catch ( err ) {
         console.error(err);

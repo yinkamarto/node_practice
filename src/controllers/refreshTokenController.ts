@@ -1,10 +1,10 @@
 import express from 'express';
 import users from '../model/users.json' with { type: 'json' };
 import jwt from 'jsonwebtoken';
-import * as dotenv from 'dotenv';
+import * as dotenvx from '@dotenvx/dotenvx';
 import { generateRandomSecret } from '../lib/util.ts';
 import type { User, UserPayload } from './authController.ts';
-dotenv.config();
+dotenvx.config();
 
 type Request = express.Request;
 type Response = express.Response;
