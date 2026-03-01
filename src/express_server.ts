@@ -14,12 +14,15 @@ import {corsOptions} from './config/corsOptions.ts';
 import { verifyJWT } from './middleware/verifyJWT.ts';
 import cookieParser from 'cookie-parser';
 import { credentials } from './middleware/credentials.ts';
-import { getDirName } from './lib/util.ts';
+import { getDirName, inLocalDev } from './lib/util.ts';
+import * as dotenvx from '@dotenvx/dotenvx';
+dotenvx.config();
 
 const __dirname = getDirName(import.meta.url)
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+console.log('\x1b[33m%s\x1b[0m', `Starting server in ${inLocalDev()? 'dev' : 'prod'} environment`);
 // custom middleware
 app.use(logger);
 
@@ -48,7 +51,7 @@ app.use('/auth', authRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 
-// Every route after this will need auth
+// Add Auth protected routes below
 app.use(verifyJWT);
 app.use('/employees', employeesRouter);
 
@@ -65,4 +68,4 @@ app.all('*splat', (req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log('\x1b[32m%s\x1b[0m', `Server running on port ${PORT}`));

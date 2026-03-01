@@ -2,14 +2,14 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import users from '../model/users.json' with { type: 'json' };
 import jwt from 'jsonwebtoken';
-import * as dotenv from 'dotenv';
+import * as dotenvx from '@dotenvx/dotenvx';
 import fsPromises from 'fs/promises';
 import path from 'path';
-import { generateRandomSecret } from '../lib/util.ts';
+import { generateRandomSecret, inLocalDev } from '../lib/util.ts';
 import { getDirName } from '../lib/util.ts';
 
 const __dirname = getDirName(import.meta.url)
-dotenv.config();
+dotenvx.config();
 
 type Request = express.Request;
 type Response = express.Response;
@@ -66,7 +66,7 @@ export const handleLogin = async (req:Request, res:Response) => {
             JSON.stringify(usersDB.users)
         );
         // send refresh token as http only(unavailable to javascript)
-        res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000, secure: true });
+        res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000, secure: !inLocalDev() });
         res.json({ accessToken }); // Should only be in memory which expires momentarily
         console.log({ 'success': `User ${username} is logged in!` });
     } else {

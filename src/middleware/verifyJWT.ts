@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken';
-import * as dotenv from 'dotenv';
 import express from 'express';
 import { generateRandomSecret } from '../lib/util.ts';
 import { type UserPayload } from '../controllers/authController.ts';
-dotenv.config();
 type NextFunction = express.NextFunction;
 type Request = express.Request;
 type Response = express.Response;
