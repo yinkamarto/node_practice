@@ -1,0 +1,11 @@
+import http from 'k6/http';
+
+export const options = {
+  iterations: 100000,
+};
+
+// The default exported function is gonna be picked up by k6 as the entry point for the test script. It will be executed repeatedly in "iterations" for the whole duration of the test.
+export default function () {
+  // Make a GET request to the target URL
+  http.get('http://localhost:8000');
+}
