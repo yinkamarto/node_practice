@@ -18,7 +18,7 @@ import { getDirName, inLocalDev } from './lib/util.ts';
 import * as dotenvx from '@dotenvx/dotenvx';
 dotenvx.config();
 
-const __dirname = getDirName(import.meta.url)
+const __dirname = getDirName(import.meta.url);
 const app = express();
 const PORT = process.env.PORT || 8000;
 
@@ -51,9 +51,8 @@ app.use('/auth', authRouter);
 app.use('/refresh', refreshRouter);
 app.use('/logout', logoutRouter);
 
-// Add Auth protected routes below
-app.use(verifyJWT);
-app.use('/employees', employeesRouter);
+// Use JWT verification for employees endpoint
+app.use('/employees', verifyJWT, employeesRouter);
 
 app.all('*splat', (req, res) => {
     res.status(404);

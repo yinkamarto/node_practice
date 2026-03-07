@@ -4,6 +4,7 @@ import path from 'path';
 import bcrypt from 'bcrypt';
 import users from '../model/users.json' with { type: 'json' };
 import { getDirName } from '../lib/util.ts';
+import { RolesList } from '../config/roles_list.ts';
 
 const __dirname = getDirName(import.meta.url)
 type Request = express.Request;
@@ -48,7 +49,12 @@ export const handleNewUser = async (req: Request, res: Response): Promise<Respon
         const hashedPassword = await bcrypt.hash(password, 10);
         // store new user
         const lastId = usersDB.users[usersDB.users.length - 1]?.id;
-        const newUser = {id: lastId? lastId + 1: 1, username: username, password: hashedPassword};
+        const newUser = {
+            'id': lastId? lastId + 1: 1,
+            'username': username,
+            'roles': { "User": RolesList.User },
+            'password': hashedPassword
+        };
         usersDB.setUsers([...usersDB.users, newUser]);
 
         console.log(path.join(__dirname, '..', 'model', 'users.json'));

@@ -31,6 +31,10 @@ export const getAllEmployees = (req: Request, res: Response): Response => {
  * @return {201} 201 status code with parsed JSON response
  */
 export const createNewEmployee = (req: Request, res: Response): Response => {
+    const foundEmployee = data.employees.find(emp => emp.firstname === req.body.firstname && emp.lastname === req.body.lastname);
+    if ( foundEmployee ) {
+        return res.status(409).json({ 'message': `Employee "${req.body.firstname} ${req.body.lastname}" already exists.` });
+    }
     const lastId = data.employees[data.employees.length - 1]?.id;
     const newEmployee = {
         id: lastId? lastId + 1 : 1,

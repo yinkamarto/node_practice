@@ -31,7 +31,12 @@ export const handleRefreshToken  = async (req:Request, res:Response) => {
     try {
         const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as UserPayload;
         if (foundUser.username !== decoded.username) return res.sendStatus(403);
-        const payLoad: UserPayload = { '_id': foundUser.id.toString(), 'username': foundUser.username }
+        const roles = Object.values(foundUser.roles?foundUser.roles:{});
+        const payLoad: UserPayload = {
+            '_id': foundUser.id.toString(),
+            'username': foundUser.username,
+            'roles': roles
+        }
         const accessToken = jwt.sign(
             payLoad,
             ACCESS_SECRET,

@@ -20,24 +20,26 @@ export interface User {
     id: number,
     username: string,
     password: string,
-    refreshToken?: string
+    refreshToken?: string,
+    roles?: object
 }
 
 export interface UserPayload extends JwtPayload {
     _id: string;
     username: string;
+    roles?: number[];
 }
 
 const usersDB: { users: User[], setUsers(data: User[]): void } = {
     users: users,
-    setUsers: function ( data: User[] ) { this.users = data }
+    setUsers: function (data: User[]) { this.users = data }
 }
 
 // TODO Generated secret needs to be stored in secrets manager
 const ACCESS_SECRET: Secret = process.env.ACCESS_TOKEN_SECRET?.toString() || generateRandomSecret();
 const REFRESH_SECRET: Secret = process.env.REFRESH_TOKEN_SECRET?.toString() || generateRandomSecret();
 
-export const handleLogin = async (req:Request, res:Response) => {
+export const handleLogin = async (req: Request, res: Response) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ 'message': 'Username and password are required!' });
     const foundUser = usersDB.users.find(user => user.username === username);
@@ -45,17 +47,22 @@ export const handleLogin = async (req:Request, res:Response) => {
     // Check password
     const match = await bcrypt.compare(password, foundUser.password);
     if (match) {
-        const payLoad: UserPayload = { '_id': foundUser.id.toString(), 'username': foundUser.username }
+        const roles = Object.values(foundUser.roles?foundUser.roles:{});
+        const payLoad: UserPayload = {
+            '_id': foundUser.id.toString(),
+            'username': foundUser.username,
+            'roles': roles
+        };
         // create JWTs
         const accessToken = jwt.sign(
-            payLoad,
+            {...payLoad, roles},
             ACCESS_SECRET,
-            { expiresIn: '30s'}
+            { expiresIn: '30s' }
         );
         const refreshToken = jwt.sign(
             payLoad,
             REFRESH_SECRET,
-            { expiresIn: '1d'}
+            { expiresIn: '1d' }
         );
         // Save refresh token with current user
         const otherUsers = usersDB.users.filter(user => user.username !== foundUser.username);
