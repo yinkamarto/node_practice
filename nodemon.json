@@ -2,5 +2,5 @@
   "watch": ["./src"],
   "ext": "ts, json",
   "ignore": ["dist"],
-  "exec": "ts-node ./src/express_server.ts"
+  "exec": "dotenvx run -- ts-node ./src/express_server.ts"
 }

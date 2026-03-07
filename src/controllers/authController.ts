@@ -2,14 +2,12 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import users from '../model/users.json' with { type: 'json' };
 import jwt from 'jsonwebtoken';
-import * as dotenvx from '@dotenvx/dotenvx';
 import fsPromises from 'fs/promises';
 import path from 'path';
 import { generateRandomSecret, inLocalDev } from '../lib/util.ts';
 import { getDirName } from '../lib/util.ts';
 
 const __dirname = getDirName(import.meta.url)
-dotenvx.config();
 
 type Request = express.Request;
 type Response = express.Response;

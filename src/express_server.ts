@@ -15,8 +15,14 @@ import { verifyJWT } from './middleware/verifyJWT.ts';
 import cookieParser from 'cookie-parser';
 import { credentials } from './middleware/credentials.ts';
 import { getDirName, inLocalDev } from './lib/util.ts';
+import mongoose from 'mongoose';
 import * as dotenvx from '@dotenvx/dotenvx';
 dotenvx.config();
+
+import { connectDB } from './config/dbConn.ts';
+
+// Connect to mongoDB
+connectDB()
 
 const __dirname = getDirName(import.meta.url);
 const app = express();
@@ -67,4 +73,7 @@ app.all('*splat', (req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log('\x1b[32m%s\x1b[0m', `Server running on port ${PORT}`));
+mongoose.connection.once('open', () => {
+    console.log('Connected to MongoDB');
+    app.listen(PORT, () => console.log('\x1b[32m%s\x1b[0m', `Server running on port ${PORT}`));
+});
