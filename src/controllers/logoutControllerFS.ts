@@ -1,0 +1,46 @@
+import express from 'express';
+import fsPromises from 'fs/promises';
+import path from 'path';
+
+import { getDirName, inLocalDev } from '../lib/util.ts';
+import users from '../model/users.json' with { type: 'json' };
+import type { UserInterface } from './authController.ts';
+
+const __dirname = getDirName(import.meta.url)
+
+type Request = express.Request;
+type Response = express.Response;
+
+const usersDB: { users: UserInterface[], setUsers(data: UserInterface[]): void } = {
+    users: users,
+    setUsers: function ( data: UserInterface[] ) { this.users = data }
+}
+
+export const handleLogout  = async (req:Request, res:Response) => {
+    // TODO: On client, also delete the access Token
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(204); // No content
+    const refreshToken = cookies.jwt;
+
+    // Is refresh token in db?
+    const foundUser = usersDB.users.find(person => person.refreshToken === refreshToken) as UserInterface;
+    if (!foundUser) {
+        res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: !inLocalDev() });
+        return res.sendStatus(403); // Forbidden
+    }
+    try {
+        // Delete refresh token in db
+        const otherUsers = usersDB.users.filter(person => person.refreshToken !== foundUser.refreshToken);
+        const currentUser = { ...foundUser, refreshToken: '' };
+        usersDB.setUsers([...otherUsers, currentUser]);
+        await fsPromises.writeFile(
+            path.join(__dirname, '..', 'model', 'users.json'),
+            JSON.stringify(usersDB.users)
+        );
+        res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: !inLocalDev() });
+        res.sendStatus(204);
+    } catch ( err ) {
+        console.error(err);
+        return res.sendStatus(500);
+    }
+}

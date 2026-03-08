@@ -2,12 +2,18 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 
 import { generateRandomSecret } from '../lib/util.ts';
-import { User } from '../model/user.ts';
-import type { UserPayload } from './authController.ts';
+import users from '../model/users.json' with { type: 'json' };
+import type { UserInterface, UserPayload } from './authController.ts';
 
 type Request = express.Request;
 type Response = express.Response;
+// type JwtPayload = jwt.JwtPayload;
 type Secret = jwt.Secret;
+
+const usersDB: { users: UserInterface[], setUsers(data: UserInterface[]): void } = {
+    users: users,
+    setUsers: function ( data: UserInterface[] ) { this.users = data }
+}
 
 // TODO Generated secret needs to be stored in secrets manager
 const ACCESS_SECRET: Secret = process.env.ACCESS_TOKEN_SECRET?.toString() || generateRandomSecret();
@@ -19,13 +25,12 @@ export const handleRefreshToken  = async (req:Request, res:Response) => {
     console.log(cookies.jwt);
     const refreshToken = cookies.jwt;
 
-    const foundUser = await User.findOne({ refreshToken }).exec();
+    const foundUser = usersDB.users.find(person => person.refreshToken === refreshToken) as UserInterface;
     if (!foundUser) return res.sendStatus(403); // Forbidden
     try {
         const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as UserPayload;
-        if (foundUser.username !== decoded.username || !foundUser.roles) return res.sendStatus(403);
-        const rolesWithNull = Object.values(foundUser.roles);
-        const roles: number[] = rolesWithNull.filter((value): value is number => value !== null);
+        if (foundUser.username !== decoded.username) return res.sendStatus(403);
+        const roles = Object.values(foundUser.roles?foundUser.roles:{});
         const payLoad: UserPayload = {
             '_id': foundUser.id.toString(),
             'username': foundUser.username,

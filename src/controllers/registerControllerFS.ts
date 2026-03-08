@@ -1,8 +1,13 @@
 import bcrypt from 'bcrypt';
 import express from 'express';
+import fsPromises from 'fs/promises';
+import path from 'path';
 
-import { User } from '../model/user.ts';
+import { RolesList } from '../config/roles_list.ts';
+import { getDirName } from '../lib/util.ts';
+import users from '../model/users.json' with { type: 'json' };
 
+const __dirname = getDirName(import.meta.url)
 type Request = express.Request;
 type Response = express.Response;
 
@@ -10,6 +15,11 @@ interface User {
     id: number,
     username: string,
     password: string
+}
+
+const usersDB: { users: User[], setUsers(data: User[]): void } = {
+    users: users,
+    setUsers: function ( data: User[] ) { this.users = data }
 }
 
 /**
@@ -30,8 +40,7 @@ export const handleNewUser = async (req: Request, res: Response): Promise<Respon
         return res.status(400).json({ 'message': 'Username and password is required!' });
     }
     // check for duplicates
-    const duplicate = await User.findOne({ username: username }).exec();
-    
+    const duplicate = usersDB.users.find(user => user.username === username);
     if (duplicate) {
         console.error(`Duplicate user ${username} found!`);
         return res.status(409).json({ 'failure': `Duplicate user ${username} found!`}); // duplicate entry
@@ -39,13 +48,19 @@ export const handleNewUser = async (req: Request, res: Response): Promise<Respon
     try {
         // hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        // Create new user
-        const result = await User.create({
+        // store new user
+        const lastId = usersDB.users[usersDB.users.length - 1]?.id;
+        const newUser = {
+            'id': lastId? lastId + 1: 1,
             'username': username,
+            'roles': { "User": RolesList.User },
             'password': hashedPassword
-        });
-        console.log(result);
+        };
+        usersDB.setUsers([...usersDB.users, newUser]);
 
+        console.log(path.join(__dirname, '..', 'model', 'users.json'));
+        await fsPromises.writeFile(path.join(__dirname, '..', 'model', 'users.json'), JSON.stringify(usersDB.users));
+        console.log(usersDB.users);
     } catch (err: unknown) {
         return res.status(500).json({ 'message': err instanceof Error? err.message : err })
     }

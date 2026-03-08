@@ -1,9 +1,14 @@
 import bcrypt from 'bcrypt';
 import express from 'express';
+import fsPromises from 'fs/promises';
 import jwt from 'jsonwebtoken';
+import path from 'path';
 
 import { generateRandomSecret, inLocalDev } from '../lib/util.ts';
-import { User } from '../model/user.ts';
+import { getDirName } from '../lib/util.ts';
+import users from '../model/users.json' with { type: 'json' };
+
+const __dirname = getDirName(import.meta.url)
 
 type Request = express.Request;
 type Response = express.Response;
@@ -24,6 +29,11 @@ export interface UserPayload extends JwtPayload {
     roles?: number[];
 }
 
+const usersDB: { users: UserInterface[], setUsers(data: UserInterface[]): void } = {
+    users: users,
+    setUsers: function (data: UserInterface[]) { this.users = data }
+}
+
 // TODO Generated secret needs to be stored in secrets manager
 const ACCESS_SECRET: Secret = process.env.ACCESS_TOKEN_SECRET?.toString() || generateRandomSecret();
 const REFRESH_SECRET: Secret = process.env.REFRESH_TOKEN_SECRET?.toString() || generateRandomSecret();
@@ -31,15 +41,14 @@ const REFRESH_SECRET: Secret = process.env.REFRESH_TOKEN_SECRET?.toString() || g
 export const handleLogin = async (req: Request, res: Response) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ 'message': 'Username and password are required!' });
-    const foundUser = await User.findOne({ username: username });
-    if (!foundUser || !foundUser.roles) return res.sendStatus(401); //Unauthorized
+    const foundUser = usersDB.users.find(user => user.username === username);
+    if (!foundUser) return res.sendStatus(401); //Unauthorized
     // Check password
     const match = await bcrypt.compare(password, foundUser.password);
     if (match) {
-        const rolesWithNull = Object.values(foundUser.roles);
-        const roles = rolesWithNull.filter((value): value is number => value !== null);
+        const roles = Object.values(foundUser.roles?foundUser.roles:{});
         const payLoad: UserPayload = {
-            '_id': foundUser.id,
+            '_id': foundUser.id.toString(),
             'username': foundUser.username,
             'roles': roles
         };
@@ -55,9 +64,13 @@ export const handleLogin = async (req: Request, res: Response) => {
             { expiresIn: '1d' }
         );
         // Save refresh token with current user
-        foundUser.refreshToken = refreshToken;
-        const result = await foundUser.save();
-        console.log(result);
+        const otherUsers = usersDB.users.filter(user => user.username !== foundUser.username);
+        const currentUser = { ...foundUser, refreshToken };
+        usersDB.setUsers([...otherUsers, currentUser]);
+        await fsPromises.writeFile(
+            path.join(__dirname, '..', 'model', 'users.json'),
+            JSON.stringify(usersDB.users)
+        );
         // send refresh token as http only(unavailable to javascript)
         res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000, secure: !inLocalDev() });
         res.json({ accessToken }); // Should only be in memory which expires momentarily

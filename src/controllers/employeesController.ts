@@ -1,6 +1,8 @@
 import express from 'express';
 
-import employees from '../model/employees.json' with { type: 'json' };
+import { Employee } from '../model/employee.ts';
+
+
 type Request = express.Request;
 type Response = express.Response;
 
@@ -10,18 +12,16 @@ interface Employee {
     lastname: string
 };
 
-const data: { employees: Employee[], setEmployees(data: Employee[]): void } = {
-    employees: [],
-    setEmployees: function (data: Employee[]) { this.employees = data; }
-};
-data.setEmployees(employees);
+
 
 /**
  * Get all employees
  * @returns {Response} parsed JSON response
  */
-export const getAllEmployees = (req: Request, res: Response): Response => {
-    return res.json(data.employees);
+export const getAllEmployees = async (req: Request, res: Response): Promise<Response> => {
+    const employees = await Employee.find().exec();
+    if(!employees) return res.status(204).json({ 'message': 'No employees found!' });
+    return res.json(employees);
 }
 
 /**
@@ -31,22 +31,22 @@ export const getAllEmployees = (req: Request, res: Response): Response => {
  * @return {400} 400 status code and message if first and last name is not supplied
  * @return {201} 201 status code with parsed JSON response
  */
-export const createNewEmployee = (req: Request, res: Response): Response => {
-    const foundEmployee = data.employees.find(emp => emp.firstname === req.body.firstname && emp.lastname === req.body.lastname);
-    if ( foundEmployee ) {
-        return res.status(409).json({ 'message': `Employee "${req.body.firstname} ${req.body.lastname}" already exists.` });
-    }
-    const lastId = data.employees[data.employees.length - 1]?.id;
-    const newEmployee = {
-        id: lastId? lastId + 1 : 1,
-        firstname: req.body.firstname,
-        lastname: req.body.lastname
-    }
-    if (!newEmployee.firstname || !newEmployee.lastname) {
+export const createNewEmployee = async (req: Request, res: Response): Promise<Response> => {
+    if (!req?.body?.firstname || !req?.body?.lastname) {
         return res.status(400).json({ 'message': 'First and last name are required.' });
     }
-    data.setEmployees([...data.employees, newEmployee]);
-    return res.status(201).json(data.employees);
+
+    try {
+        const result = await Employee.create({
+            firstname: req.body.firstname,
+            lastname: req.body.lastname
+        });
+        return res.status(201).json(result);
+    } catch (err) {
+        console.log(err);
+    }
+
+    return res.status(500).json({ 'message': 'An unexpected error occurred!' });
 }
 
 /**
@@ -58,17 +58,18 @@ export const createNewEmployee = (req: Request, res: Response): Response => {
  * - 400 status code and message if employee not found
  * - 200 status code with parsed JSON response
  */
-export const updateEmployee = (req: Request, res: Response):Response => {
-    const employee = data.employees.find(emp => emp.id === parseInt(req.body.id));
-    if ( !employee ) {
-        return res.status(400).json({ 'message': `Employee ID ${req.body.id} not found` });
+export const updateEmployee = async (req: Request, res: Response):Promise<Response> => {
+    if (!req?.body?.id) {
+        return res.status(400).json({ 'message': 'ID parameter is required' });
+    }
+    const employee = await Employee.findOne({ _id: req.body.id }).exec();
+    if (!employee) {
+        return res.status(204).json({ 'message': `No employee matches ID ${req.body.id}` });
     }
     if ( req.body.firstname ) employee.firstname = req.body.firstname;
     if ( req.body.lastname ) employee.lastname = req.body.lastname;
-    const filteredEmployees = data.employees.filter(emp => emp.id !== parseInt(req.body.id));
-    const unsortedEmployees = [...filteredEmployees, employee];
-    data.setEmployees(unsortedEmployees.sort((a, b) => a.id > b.id ? 1 : a.id < b.id ? -1 : 0));
-    return res.json(data.employees);
+    const result = await employee.save();
+    return res.json(result);
 }
 
 /**
@@ -79,14 +80,16 @@ export const updateEmployee = (req: Request, res: Response):Response => {
  * @return {400} 400 status code and message if employee is not found
  * @return {200} 200 status code with parsed JSON response
  */
-export const deleteEmployee = (req: Request, res: Response):Response => {
-    const employee = data.employees.find(emp => emp.id === parseInt(req.body.id));
-    if ( !employee ) {
-        return res.status(400).json({ 'message': `Employee ID ${req.body.id} not found` });
+export const deleteEmployee = async (req: Request, res: Response):Promise<Response> => {
+    if (!req?.body?.id) {
+        return res.status(400).json({ 'message': 'ID parameter is required' });
+    };
+    const employee = await Employee.findOne({ _id: req.body.id }).exec();
+    if (!employee) {
+        return res.status(204).json({ 'message': `No employee matches ID ${req.body.id}` });
     }
-    const filteredEmployees = data.employees.filter(emp => emp.id !== parseInt(req.body.id));
-    data.setEmployees([...filteredEmployees]);
-    return res.json(data.employees);
+    const result = await employee.deleteOne({ _id: req.body.id });
+    return res.json(result);
 }
 
 /**
@@ -98,10 +101,11 @@ export const deleteEmployee = (req: Request, res: Response):Response => {
  * - 400 status code and message if employee is not found by the supplied id
  * - 200 status code with parsed JSON response
  */
-export const getEmployee = (req: Request, res: Response): Response => {
-    const employee = data.employees.find(emp => emp.id === parseInt(req.body.id));
-    if ( !employee ) {
-        return res.status(400).json({ 'message': `Employee ID ${req.body.id} not found` });
+export const getEmployee = async (req: Request, res: Response): Promise<Response> => {
+    if (!req?.params?.id) return res.status(400).json({ 'message': 'ID parameter is required' });
+    const employee = await Employee.findOne({ _id: req.params.id }).exec();
+    if (!employee) {
+        return res.status(204).json({ 'message': `No employee matches ID ${req.body.id}` });
     }
     return res.json(employee);
 };

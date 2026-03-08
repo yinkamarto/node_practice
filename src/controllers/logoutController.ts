@@ -1,20 +1,11 @@
 import express from 'express';
-import fsPromises from 'fs/promises';
-import path from 'path';
 
-import { getDirName, inLocalDev } from '../lib/util.ts';
-import users from '../model/users.json' with { type: 'json' };
-import type { User } from './authController.ts';
-
-const __dirname = getDirName(import.meta.url)
+import { inLocalDev } from '../lib/util.ts';
+import { User } from '../model/user.ts';
 
 type Request = express.Request;
 type Response = express.Response;
 
-const usersDB: { users: User[], setUsers(data: User[]): void } = {
-    users: users,
-    setUsers: function ( data: User[] ) { this.users = data }
-}
 
 export const handleLogout  = async (req:Request, res:Response) => {
     // TODO: On client, also delete the access Token
@@ -23,20 +14,16 @@ export const handleLogout  = async (req:Request, res:Response) => {
     const refreshToken = cookies.jwt;
 
     // Is refresh token in db?
-    const foundUser = usersDB.users.find(person => person.refreshToken === refreshToken) as User;
+    const foundUser = await User.findOne({ refreshToken }).exec();
     if (!foundUser) {
         res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: !inLocalDev() });
         return res.sendStatus(403); // Forbidden
     }
     try {
         // Delete refresh token in db
-        const otherUsers = usersDB.users.filter(person => person.refreshToken !== foundUser.refreshToken);
-        const currentUser = { ...foundUser, refreshToken: '' };
-        usersDB.setUsers([...otherUsers, currentUser]);
-        await fsPromises.writeFile(
-            path.join(__dirname, '..', 'model', 'users.json'),
-            JSON.stringify(usersDB.users)
-        );
+        foundUser.refreshToken = '';
+        const result = await foundUser.save();
+        console.log(result);
         res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: !inLocalDev() });
         res.sendStatus(204);
     } catch ( err ) {

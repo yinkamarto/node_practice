@@ -19,4 +19,4 @@ router.route('/')
     .delete(verifyRoles(RolesList.Admin), deleteEmployee);
 
 router.route('/:id')
-    .get(getEmployee)
+    .get(verifyRoles(RolesList.Admin),getEmployee);
