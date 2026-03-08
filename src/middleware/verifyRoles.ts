@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { type RolesListType } from '../config/roles_list.ts';
 type NextFunction = express.NextFunction;
 type Request = express.Request;

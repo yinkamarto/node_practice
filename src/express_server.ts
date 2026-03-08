@@ -1,22 +1,24 @@
-import express from 'express';
-import path from 'path';
+import * as dotenvx from '@dotenvx/dotenvx';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { logger } from './middleware/logEvents.ts';
+import express from 'express';
+import mongoose from 'mongoose';
+import path from 'path';
+
+import {corsOptions} from './config/corsOptions.ts';
+import { getDirName, inLocalDev } from './lib/util.ts';
+import { credentials } from './middleware/credentials.ts';
 import { errorHandler } from './middleware/errorHandler.ts';
+import { logger } from './middleware/logEvents.ts';
+import { verifyJWT } from './middleware/verifyJWT.ts';
+import { router as employeesRouter } from './routes/api/employees.ts';
+import { router as authRouter } from './routes/auth.ts';
+import { router as logoutRouter } from './routes/logout.ts';
+import { router as refreshRouter } from './routes/refresh.ts';
+import { router as registerRouter } from './routes/register.ts';
 import { router as indexRouter } from './routes/root.ts';
 import { router as subdirRouter } from './routes/subdir.ts';
-import { router as employeesRouter } from './routes/api/employees.ts';
-import { router as registerRouter } from './routes/register.ts';
-import { router as authRouter } from './routes/auth.ts';
-import { router as refreshRouter } from './routes/refresh.ts';
-import { router as logoutRouter } from './routes/logout.ts';
-import {corsOptions} from './config/corsOptions.ts';
-import { verifyJWT } from './middleware/verifyJWT.ts';
-import cookieParser from 'cookie-parser';
-import { credentials } from './middleware/credentials.ts';
-import { getDirName, inLocalDev } from './lib/util.ts';
-import mongoose from 'mongoose';
-import * as dotenvx from '@dotenvx/dotenvx';
+
 dotenvx.config();
 
 import { connectDB } from './config/dbConn.ts';

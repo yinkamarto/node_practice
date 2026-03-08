@@ -1,9 +1,10 @@
 import express from 'express';
+import fsPromises from 'fs/promises';
+import path from 'path';
+
+import { getDirName, inLocalDev } from '../lib/util.ts';
 import users from '../model/users.json' with { type: 'json' };
 import type { User } from './authController.ts';
-import path from 'path';
-import fsPromises from 'fs/promises';
-import { getDirName, inLocalDev } from '../lib/util.ts';
 
 const __dirname = getDirName(import.meta.url)
 
@@ -28,7 +29,7 @@ export const handleLogout  = async (req:Request, res:Response) => {
         return res.sendStatus(403); // Forbidden
     }
     try {
-        // Delete refresh token in db 
+        // Delete refresh token in db
         const otherUsers = usersDB.users.filter(person => person.refreshToken !== foundUser.refreshToken);
         const currentUser = { ...foundUser, refreshToken: '' };
         usersDB.setUsers([...otherUsers, currentUser]);

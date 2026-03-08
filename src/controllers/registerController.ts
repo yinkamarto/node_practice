@@ -1,10 +1,11 @@
+import bcrypt from 'bcrypt';
 import express from 'express';
 import fsPromises from 'fs/promises';
 import path from 'path';
-import bcrypt from 'bcrypt';
-import users from '../model/users.json' with { type: 'json' };
-import { getDirName } from '../lib/util.ts';
+
 import { RolesList } from '../config/roles_list.ts';
+import { getDirName } from '../lib/util.ts';
+import users from '../model/users.json' with { type: 'json' };
 
 const __dirname = getDirName(import.meta.url)
 type Request = express.Request;
@@ -26,7 +27,7 @@ const usersDB: { users: User[], setUsers(data: User[]): void } = {
  * @param {Request} req - Express request
  * @param {Response} res - Express response
  * @returns {Promise<Response>} Promise of Response or undefined
- * 
+ *
  * ### Status codes:
  * - 400 status code and message if username or password is not supplied
  * - 409 status code and message if user with that name already exists

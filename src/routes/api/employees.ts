@@ -1,12 +1,12 @@
 import express from 'express';
-import { 
+
+import { RolesList } from '../../config/roles_list.ts';
+import {
+    createNewEmployee,
+    deleteEmployee,
     getAllEmployees,
     getEmployee,
-    createNewEmployee,
-    updateEmployee,
-    deleteEmployee
-} from '../../controllers/employeesController.ts';
-import { RolesList } from '../../config/roles_list.ts';
+    updateEmployee} from '../../controllers/employeesController.ts';
 import { verifyRoles } from '../../middleware/verifyRoles.ts';
 
 export const router = express.Router();

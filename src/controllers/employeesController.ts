@@ -1,5 +1,6 @@
-import employees from '../model/employees.json' with { type: 'json' };
 import express from 'express';
+
+import employees from '../model/employees.json' with { type: 'json' };
 type Request = express.Request;
 type Response = express.Response;
 
@@ -27,7 +28,7 @@ export const getAllEmployees = (req: Request, res: Response): Response => {
  * Create new employee
  * @param {Request} req - Express request
  * @param {Response} res - Express response
- * @return {400} 400 status code and message if first and last name is not supplied 
+ * @return {400} 400 status code and message if first and last name is not supplied
  * @return {201} 201 status code with parsed JSON response
  */
 export const createNewEmployee = (req: Request, res: Response): Response => {
@@ -75,7 +76,7 @@ export const updateEmployee = (req: Request, res: Response):Response => {
  * @param {Request} req - Express request
  * @param {Response} res - Express response
  * ### Status codes:
- * @return {400} 400 status code and message if employee is not found 
+ * @return {400} 400 status code and message if employee is not found
  * @return {200} 200 status code with parsed JSON response
  */
 export const deleteEmployee = (req: Request, res: Response):Response => {
@@ -94,7 +95,7 @@ export const deleteEmployee = (req: Request, res: Response):Response => {
  * @param {Response} res - Express response
  * @returns {Response} JSON response of new employees
  * ### Status codes:
- * - 400 status code and message if employee is not found by the supplied id 
+ * - 400 status code and message if employee is not found by the supplied id
  * - 200 status code with parsed JSON response
  */
 export const getEmployee = (req: Request, res: Response): Response => {

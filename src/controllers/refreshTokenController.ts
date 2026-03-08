@@ -1,7 +1,8 @@
 import express from 'express';
-import users from '../model/users.json' with { type: 'json' };
 import jwt from 'jsonwebtoken';
+
 import { generateRandomSecret } from '../lib/util.ts';
+import users from '../model/users.json' with { type: 'json' };
 import type { User, UserPayload } from './authController.ts';
 
 type Request = express.Request;

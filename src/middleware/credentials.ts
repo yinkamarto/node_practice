@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { allowedOrigins } from '../config/allowedOrigins.ts';
 type NextFunction = express.NextFunction;
 type Request = express.Request;

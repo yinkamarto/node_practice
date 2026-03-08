@@ -1,5 +1,6 @@
 
 import cors from 'cors';
+
 import { allowedOrigins } from './allowedOrigins.ts';
 type CorsOptions = cors.CorsOptions;
 

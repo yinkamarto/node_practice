@@ -1,7 +1,8 @@
-import jwt from 'jsonwebtoken';
 import express from 'express';
-import { generateRandomSecret } from '../lib/util.ts';
+import jwt from 'jsonwebtoken';
+
 import { type UserPayload } from '../controllers/authController.ts';
+import { generateRandomSecret } from '../lib/util.ts';
 type NextFunction = express.NextFunction;
 type Request = express.Request;
 type Response = express.Response;

@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { handleNewUser } from '../controllers/registerController.ts';
 import { errorHandler } from '../middleware/errorHandler.ts';
 import { logger } from '../middleware/logEvents.ts';

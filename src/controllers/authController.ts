@@ -1,11 +1,12 @@
-import express from 'express';
 import bcrypt from 'bcrypt';
-import users from '../model/users.json' with { type: 'json' };
-import jwt from 'jsonwebtoken';
+import express from 'express';
 import fsPromises from 'fs/promises';
+import jwt from 'jsonwebtoken';
 import path from 'path';
+
 import { generateRandomSecret, inLocalDev } from '../lib/util.ts';
 import { getDirName } from '../lib/util.ts';
+import users from '../model/users.json' with { type: 'json' };
 
 const __dirname = getDirName(import.meta.url)
 
